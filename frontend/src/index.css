@@ -1,0 +1,194 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream text-jet font-body antialiased;
+    background-image:
+      radial-gradient(
+        ellipse at 10% 20%,
+        rgba(201, 168, 76, 0.06) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse at 90% 80%,
+        rgba(17, 17, 17, 0.04) 0%,
+        transparent 50%
+      );
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-body font-bold;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0c0903;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #111111;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2a2a2a;
+  }
+
+  ::selection {
+    background: #111111;
+    color: #f5f0e8;
+  }
+}
+
+@layer components {
+  /* ── Buttons ─────────────────────────────────────────────────────── */
+  .btn-primary {
+    @apply bg-jet text-cream font-bold py-3 px-8 rounded-lg transition-all duration-200
+           hover:bg-jet-2 hover:scale-[1.02] active:scale-[0.98]
+           focus:outline-none focus:ring-2 focus:ring-jet focus:ring-offset-2 focus:ring-offset-cream;
+  }
+  .btn-secondary {
+    @apply border border-jet/20 text-jet font-semibold py-3 px-8 rounded-lg transition-all duration-200
+           hover:border-jet hover:bg-jet hover:text-cream
+           focus:outline-none focus:ring-2 focus:ring-jet/30;
+  }
+  .btn-ghost {
+    @apply text-jet/60 font-medium py-2 px-4 rounded-lg transition-all duration-200
+           hover:text-jet hover:bg-jet/5;
+  }
+
+  /* ── Cards ───────────────────────────────────────────────────────── */
+  .card {
+    @apply bg-white border border-jet/8 rounded-2xl;
+  }
+  .card-hover {
+    @apply card transition-all duration-300 hover:border-jet/20 hover:shadow-lg hover:shadow-jet/5;
+  }
+
+  /* ── Form elements ───────────────────────────────────────────────── */
+  .input {
+    @apply w-full bg-cream-2 border border-jet/15 rounded-xl px-4 py-3
+           text-jet placeholder-jet/30
+           focus:outline-none focus:border-jet/50 focus:ring-1 focus:ring-jet/20
+           transition-all duration-200;
+  }
+  .label {
+    @apply block text-sm font-medium text-jet/50 mb-2;
+  }
+
+  /* ── Typography ──────────────────────────────────────────────────── */
+  .section-title {
+    @apply font-display text-5xl md:text-6xl lg:text-7xl tracking-tight text-jet;
+  }
+  .section-subtitle {
+    @apply text-jet/50 text-lg leading-relaxed max-w-2xl;
+  }
+  .nav-link {
+    @apply text-jet/50 hover:text-jet transition-colors duration-200 text-sm font-medium;
+  }
+
+  /* ── Misc ────────────────────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider;
+  }
+  .stat-card {
+    @apply bg-white border border-jet/8 rounded-2xl p-6 flex flex-col gap-1;
+  }
+  .shimmer-bg {
+    background: linear-gradient(90deg, #ede8df 25%, #e2ddd4 50%, #ede8df 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  .skeleton {
+    @apply shimmer-bg rounded-lg;
+  }
+
+  /* ── Gold accent ─────────────────────────────────────────────────── */
+  .text-accent {
+    color: #c9a84c;
+  }
+  .bg-accent {
+    background-color: #c9a84c;
+  }
+  .border-accent {
+    border-color: #c9a84c;
+  }
+
+  /* ── Neon → gold aliases (backwards compat) ──────────────────────── */
+  .text-neon {
+    color: #c9a84c;
+  }
+  .text-neon-glow {
+    color: #c9a84c;
+  }
+  .bg-neon {
+    background-color: #111111;
+  }
+  .border-neon {
+    border-color: #111111;
+  }
+  .neon-glow {
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.25);
+  }
+}
+
+/* ── Utility overrides ──────────────────────────────────────────────── */
+.bg-dark-100 {
+  background-color: #ffffff;
+}
+.bg-dark-200 {
+  background-color: #f5f0e8;
+}
+.bg-dark-300 {
+  background-color: #ede8df;
+}
+.bg-dark-400 {
+  background-color: #e2ddd4;
+}
+
+/* Hero grid pattern */
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(17, 17, 17, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease;
+}
+
+/* category-pill active */
+.category-pill.active {
+  background: #111111;
+  color: #f5f0e8;
+}
+
+/* Tailwind opacity util used via slash syntax */
+.border-jet\/8 {
+  border-color: rgba(17, 17, 17, 0.08);
+}
+.border-jet\/15 {
+  border-color: rgba(17, 17, 17, 0.15);
+}
+.border-jet\/20 {
+  border-color: rgba(17, 17, 17, 0.2);
+}
