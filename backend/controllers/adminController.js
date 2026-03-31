@@ -7,6 +7,7 @@ const User = require('../models/User');
 const Booking = require('../models/Booking');
 const Plan = require('../models/Plan');
 const GymClass = require('../models/GymClass');
+const { sendAccountActivationEmail, sendAccountDeactivationEmail } = require('../config/email');
 
 /**
  * GET /api/admin/dashboard
@@ -138,6 +139,9 @@ const getUsers = async (req, res, next) => {
  */
 const updateUser = async (req, res, next) => {
   try {
+    const oldUser = await User.findById(req.params.id);
+    if (!oldUser) return res.status(404).json({ error: 'User not found.' });
+
     const allowedUpdates = ['role', 'isActive', 'subscription'];
     const updates = {};
     allowedUpdates.forEach(field => {
@@ -149,7 +153,15 @@ const updateUser = async (req, res, next) => {
       runValidators: true,
     });
 
-    if (!user) return res.status(404).json({ error: 'User not found.' });
+    // Check if isActive status changed and send appropriate email
+    if (updates.isActive !== undefined && oldUser.isActive !== updates.isActive) {
+      if (updates.isActive === true) {
+        sendAccountActivationEmail(user).catch(err => console.error('Activation email failed:', err));
+      } else {
+        sendAccountDeactivationEmail(user).catch(err => console.error('Deactivation email failed:', err));
+      }
+    }
+
     res.json({ message: 'User updated.', user });
   } catch (error) {
     next(error);

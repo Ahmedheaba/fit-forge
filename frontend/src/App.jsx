@@ -17,6 +17,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 // Layout
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import Chatbot from "./components/layout/Chatbot";
 
 function PrivateRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -116,6 +117,7 @@ function AppRoutes() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
+      <Chatbot />
       <Footer />
     </div>
   );

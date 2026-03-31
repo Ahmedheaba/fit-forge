@@ -19,6 +19,7 @@ const bookingRoutes = require("./routes/bookings");
 const adminRoutes = require("./routes/admin");
 const classRoutes = require("./routes/classes");
 const paymentRoutes = require("./routes/payments");
+const chatRoutes = require("./routes/chat");
 const app = express();
 
 // ─── Security Middleware ───────────────────────────────────────────────────────
@@ -84,6 +85,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/chat", chatRoutes);
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => {
   res.json({

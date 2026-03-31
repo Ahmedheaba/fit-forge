@@ -160,17 +160,7 @@ export default function GalleryPage() {
         {/* ── VIDEOS ── */}
         {activeTab === 'videos' && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white border border-jet/8 rounded-2xl p-5 mb-8 flex items-start gap-4">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${GOLD}15`, border: `1.5px solid ${GOLD}40` }}>
-                <FiVideo size={16} style={{ color: GOLD }} />
-              </div>
-              <div>
-                <p className="font-semibold text-sm text-jet mb-1">Adding Your Own Videos</p>
-                <p className="text-jet/40 text-xs leading-relaxed">
-                  Copy the YouTube video ID from the URL (e.g. youtube.com/watch?v=<span className="font-mono" style={{ color: GOLD }}>gey73xiS79A</span>) and replace it in the VIDEOS array in <span className="font-mono" style={{ color: GOLD }}>GalleryPage.jsx</span>.
-                </p>
-              </div>
-            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {VIDEOS.map(video => (
                 <div key={video.id} className="bg-white border border-jet/8 rounded-2xl overflow-hidden shadow-sm">

@@ -74,13 +74,13 @@ const sendWelcomeEmail = async (user) => {
   const transporter = createTransporter();
   const html = baseTemplate(`
     <div class="card">
-      <h1 style="font-size: 28px; margin-bottom: 8px;">Welcome to FitForge! 💪</h1>
+      <h1 style="font-size: 28px; margin-bottom: 8px;">Welcome to FitForge!</h1>
       <p style="color: #aaa; margin-bottom: 24px;">Your fitness journey starts now, ${user.name.split(' ')[0]}.</p>
       <p style="color: #ccc; line-height: 1.7;">
-        You're officially part of the FitForge community. Explore our world-class facilities, 
-        book your first session, and choose a membership plan that fits your goals.
+        Now you are one of our members! Please choose your plan. Explore our world-class facilities, 
+        and find the right subscription for you to start booking classes.
       </p>
-      <a href="${process.env.FRONTEND_URL}/plans" class="btn">Explore Plans →</a>
+      <a href="${process.env.FRONTEND_URL}/plans" class="btn">Choose Your Plan →</a>
     </div>
     <div class="card">
       <h3 style="margin-bottom: 16px; color: #39FF14;">What's next?</h3>
@@ -193,4 +193,85 @@ const sendCancellationEmail = async (user, booking) => {
   });
 };
 
-module.exports = { sendWelcomeEmail, sendBookingConfirmation, sendCancellationEmail };
+/**
+ * Admin Account Activation email
+ */
+const sendAccountActivationEmail = async (user) => {
+  const transporter = createTransporter();
+  const html = baseTemplate(`
+    <div class="card">
+      <p style="color: #39FF14; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">Account Activated</p>
+      <h1 style="font-size: 28px; margin-bottom: 24px;">Your account is now active! 🎉</h1>
+      <p style="color: #ccc; line-height: 1.7; margin-bottom: 16px;">
+        Great news, ${user.name.split(' ')[0]}! An administrator has reviewed and fully activated your FitForge account. 
+        You can now log in, purchase membership plans, and book classes.
+      </p>
+      <a href="\${process.env.FRONTEND_URL}/login" class="btn">Log In Now →</a>
+    </div>
+  `);
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || 'FitForge <noreply@fitforge.com>',
+    to: user.email,
+    subject: 'Your FitForge Account is Active!',
+    html,
+  });
+};
+
+/**
+ * Admin Account Deactivation/Rejection email
+ */
+const sendAccountDeactivationEmail = async (user) => {
+  const transporter = createTransporter();
+  const html = baseTemplate(`
+    <div class="card">
+      <p style="color: #ff4444; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">Account Status Update</p>
+      <h1 style="font-size: 28px; margin-bottom: 24px;">Your account has been deactivated.</h1>
+      <p style="color: #ccc; line-height: 1.7; margin-bottom: 16px;">
+        Hello ${user.name.split(' ')[0]}, an administrator has deactivated or rejected your FitForge account.
+        If you believe this is an error or would like to appeal, please reply to this email to contact our support team.
+      </p>
+    </div>
+  `);
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || 'FitForge <noreply@fitforge.com>',
+    to: user.email,
+    subject: 'Update regarding your FitForge account',
+    html,
+  });
+};
+
+/**
+ * Subscription Payment Success Email
+ */
+const sendSubscriptionSuccessEmail = async (user, planName) => {
+  const transporter = createTransporter();
+  const html = baseTemplate(`
+    <div class="card">
+      <h1 style="font-size: 28px; margin-bottom: 8px;">Congratulations! 🎉</h1>
+      <p style="color: #aaa; margin-bottom: 24px;">Your payment was successful, ${user.name.split(' ')[0]}</p>
+      <p style="color: #ccc; line-height: 1.7; margin-bottom: 16px;">
+        You have successfully subscribed to the <strong>${planName}</strong> plan!
+        You are now fully set up to book unlimited sessions (based on your plan tier) and unlock your peak performance at FitForge.
+      </p>
+      <a href="\${process.env.FRONTEND_URL}/dashboard" class="btn">Go to Dashboard →</a>
+    </div>
+  `);
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || 'FitForge <noreply@fitforge.com>',
+    to: user.email,
+    subject: `Congratulations! You are now subscribed to ${planName}`,
+    html,
+  });
+};
+
+module.exports = { 
+  sendWelcomeEmail, 
+  sendBookingConfirmation, 
+  sendCancellationEmail,
+  sendAccountActivationEmail,
+  sendAccountDeactivationEmail,
+  sendSubscriptionSuccessEmail
+};

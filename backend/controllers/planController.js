@@ -5,6 +5,7 @@
 
 const Plan = require('../models/Plan');
 const User = require('../models/User');
+const { sendSubscriptionSuccessEmail } = require('../config/email');
 
 /**
  * GET /api/plans
@@ -117,6 +118,9 @@ const subscribeToPlan = async (req, res, next) => {
 
     // Increment plan subscriber count
     await Plan.findByIdAndUpdate(plan._id, { $inc: { totalSubscribers: 1 } });
+
+    // Send congratulations email
+    sendSubscriptionSuccessEmail(req.user || user, plan.name).catch(err => console.error('Subscription email failed:', err));
 
     res.json({
       message: `Successfully subscribed to ${plan.name}!`,

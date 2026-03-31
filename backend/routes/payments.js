@@ -8,6 +8,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { protect, restrictTo } = require("../middleware/auth");
 const Plan = require("../models/Plan");
 const User = require("../models/User");
+const { sendSubscriptionSuccessEmail } = require("../config/email");
 
 // ─── STRIPE CHECKOUT ──────────────────────────────────────────────────────────
 
@@ -97,7 +98,7 @@ router.post(
               endDate.setFullYear(endDate.getFullYear() + value);
               break;
           }
-          await User.findByIdAndUpdate(userId, {
+          const updatedUser = await User.findByIdAndUpdate(userId, {
             subscription: {
               planId,
               planName,
@@ -107,7 +108,9 @@ router.post(
               amount: parseFloat(planPrice),
               paymentMethod: "card",
             },
-          });
+          }, { new: true });
+          // Send congratulations email
+          sendSubscriptionSuccessEmail(updatedUser, planName).catch(err => console.error("Email error:", err));
           await Plan.findByIdAndUpdate(planId, {
             $inc: { totalSubscribers: 1 },
           });
@@ -235,6 +238,9 @@ router.post(
         },
         { new: true },
       );
+      
+      // Send the congratulatory email now that the admin has accepted their cash invite
+      sendSubscriptionSuccessEmail(updatedUser, updatedUser.subscription.planName).catch(err => console.error("Email error:", err));
       await Plan.findByIdAndUpdate(user.subscription.planId, {
         $inc: { totalSubscribers: 1 },
       });
