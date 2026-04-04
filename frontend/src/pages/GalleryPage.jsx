@@ -1,41 +1,17 @@
-import { useState } from 'react';
-import { FiX, FiPlay, FiImage, FiVideo, FiMaximize2 } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiX, FiPlay, FiImage, FiVideo, FiMaximize2, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
+import api from '../utils/api';
+import toast from 'react-hot-toast';
 
 const GOLD = '#C9A84C';
-
-const IMAGES = [
-  { id: 1,  url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=70', label: 'Main Floor',             category: 'facilities' },
-  { id: 2,  url: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=400&q=70', label: 'Weight Room',            category: 'facilities' },
-  { id: 3,  url: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=70', label: 'Strength Training',      category: 'training' },
-  { id: 4,  url: 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=400&q=70', label: 'CrossFit Box',           category: 'facilities' },
-  { id: 5,  url: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&q=70', label: 'Cardio Zone',            category: 'facilities' },
-  { id: 6,  url: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&q=70', label: 'Yoga Class',             category: 'classes' },
-  { id: 7,  url: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=400&q=70', label: 'Dumbbell Area',          category: 'training' },
-  { id: 8,  url: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400&q=70', label: 'Personal Training',      category: 'training' },
-  { id: 9,  url: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=400&q=70', label: 'Boxing Ring',            category: 'classes' },
-  { id: 10, url: 'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=400&q=70', label: 'Cycling Studio',         category: 'classes' },
-  { id: 11, url: 'https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=400&q=70', label: 'HIIT Session',           category: 'classes' },
-  { id: 12, url: 'https://images.unsplash.com/photo-1567598508481-65985588e295?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1567598508481-65985588e295?w=400&q=70', label: 'Bench Press',            category: 'training' },
-  { id: 13, url: 'https://images.unsplash.com/photo-1544033527-b192daee1f5b?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1544033527-b192daee1f5b?w=400&q=70', label: 'Locker Rooms',           category: 'facilities' },
-  { id: 14, url: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?w=400&q=70', label: 'Pilates Studio',         category: 'classes' },
-  { id: 15, url: 'https://images.unsplash.com/photo-1530822847156-5df684ec5933?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1530822847156-5df684ec5933?w=400&q=70', label: 'Kettlebell Training',    category: 'training' },
-  { id: 16, url: 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400&q=70', label: 'Barbell Squat',         category: 'training' },
-  { id: 17, url: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=400&q=70', label: 'Recovery Zone',         category: 'facilities' },
-  { id: 18, url: 'https://images.unsplash.com/photo-1558611012118-696072aa579a?w=800&q=80', thumb: 'https://images.unsplash.com/photo-1558611012118-696072aa579a?w=400&q=70', label: 'Group Fitness',         category: 'classes' },
-];
-
-const VIDEOS = [
-  { id: 'v1', type: 'youtube', embedId: 'gey73xiS79A', title: 'FitForge Gym Tour',           description: 'Take a full tour of our world-class facilities.' },
-  { id: 'v2', type: 'youtube', embedId: 'IODxDxX7oi4', title: 'Member Transformation Stories', description: 'Real results from real FitForge members.' },
-];
-
 const CATEGORIES = ['all', 'facilities', 'training', 'classes'];
 
 function Lightbox({ item, onClose, onPrev, onNext }) {
   if (!item) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       style={{ background: 'rgba(17,17,17,0.95)' }}
       onClick={onClose}
       tabIndex={0}
@@ -56,12 +32,74 @@ function Lightbox({ item, onClose, onPrev, onNext }) {
 }
 
 export default function GalleryPage() {
-  const [category, setCategory]     = useState('all');
+  const { isAdmin } = useAuth();
+  
+  const [gallery, setGallery] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [category, setCategory] = useState('all');
   const [lightboxItem, setLightboxItem] = useState(null);
-  const [activeTab, setActiveTab]   = useState('photos');
+  const [activeTab, setActiveTab] = useState('photos');
+  
+  // Admin Form State
+  const [showForm, setShowForm] = useState(false);
+  const [formType, setFormType] = useState('photo');
+  const [formData, setFormData] = useState({
+    url: '', embedId: '', label: '', title: '', category: 'facilities', description: ''
+  });
 
-  const filtered = category === 'all' ? IMAGES : IMAGES.filter(img => img.category === category);
-  const currentIndex = filtered.findIndex(img => img.id === lightboxItem?.id);
+  const loadGallery = async () => {
+    try {
+      const res = await api.get('/gallery');
+      setGallery(res.data.gallery);
+    } catch (err) {
+      toast.error('Failed to load gallery');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadGallery();
+  }, []);
+
+  const photos = gallery.filter(item => item.type === 'photo');
+  const videos = gallery.filter(item => item.type === 'video');
+
+  const filteredPhotos = category === 'all' ? photos : photos.filter(img => img.category === category);
+  const currentIndex = filteredPhotos.findIndex(img => img._id === lightboxItem?._id);
+
+  const handleAddMedia = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        type: formType,
+        ...formData
+      };
+      // If photo, we can just use url as thumb for simplicity
+      if (formType === 'photo' && !payload.thumb) {
+        payload.thumb = payload.url;
+      }
+      await api.post('/gallery', payload);
+      toast.success('Media added successfully');
+      setShowForm(false);
+      setFormData({ url: '', embedId: '', label: '', title: '', category: 'facilities', description: '' });
+      loadGallery();
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message);
+    }
+  };
+
+  const handleDelete = async (id, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this media item?')) return;
+    try {
+      await api.delete(`/gallery/${id}`);
+      toast.success('Media deleted');
+      loadGallery();
+    } catch (err) {
+      toast.error('Failed to delete');
+    }
+  };
 
   return (
     <>
@@ -69,9 +107,54 @@ export default function GalleryPage() {
         <Lightbox
           item={lightboxItem}
           onClose={() => setLightboxItem(null)}
-          onPrev={() => setLightboxItem(filtered[(currentIndex - 1 + filtered.length) % filtered.length])}
-          onNext={() => setLightboxItem(filtered[(currentIndex + 1) % filtered.length])}
+          onPrev={() => setLightboxItem(filteredPhotos[(currentIndex - 1 + filteredPhotos.length) % filteredPhotos.length])}
+          onNext={() => setLightboxItem(filteredPhotos[(currentIndex + 1) % filteredPhotos.length])}
         />
+      )}
+
+      {/* Admin Add Media Modal */}
+      {showForm && isAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-jet/80 backdrop-blur-sm" onClick={() => setShowForm(false)}>
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="font-display text-3xl text-jet">Add Media</h2>
+              <button onClick={() => setShowForm(false)} className="text-jet/50 hover:text-jet"><FiX size={24} /></button>
+            </div>
+            
+            <form onSubmit={handleAddMedia} className="space-y-4">
+              <div>
+                <label className="label">Media Type</label>
+                <select className="input" value={formType} onChange={e => setFormType(e.target.value)}>
+                  <option value="photo">Photo</option>
+                  <option value="video">Video</option>
+                </select>
+              </div>
+
+              {formType === 'photo' ? (
+                <>
+                  <div><label className="label">Image URL</label><input className="input" required placeholder="https://example.com/image.jpg" value={formData.url} onChange={e => setFormData({...formData, url: e.target.value})} /></div>
+                  <div><label className="label">Caption / Label</label><input className="input" required placeholder="Weight Room" value={formData.label} onChange={e => setFormData({...formData, label: e.target.value})} /></div>
+                  <div>
+                    <label className="label">Category</label>
+                    <select className="input" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+                      <option value="facilities">Facilities</option>
+                      <option value="training">Training</option>
+                      <option value="classes">Classes</option>
+                    </select>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div><label className="label">YouTube Embed ID</label><input className="input" required placeholder="e.g. gey73xiS79A" value={formData.embedId} onChange={e => setFormData({...formData, embedId: e.target.value})} /></div>
+                  <div><label className="label">Video Title</label><input className="input" required placeholder="Gym Tour" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} /></div>
+                  <div><label className="label">Description</label><textarea className="input" rows="2" placeholder="Video description..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} /></div>
+                </>
+              )}
+
+              <button type="submit" className="btn-primary w-full mt-2">Add to Gallery</button>
+            </form>
+          </div>
+        </div>
       )}
 
       <div className="min-h-screen bg-cream pb-16">
@@ -89,12 +172,12 @@ export default function GalleryPage() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-6">
+        {/* Tabs and Admin controls */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-6 flex justify-between items-end flex-wrap gap-4">
           <div className="flex gap-1 bg-white border border-jet/8 rounded-xl p-1 w-fit shadow-sm">
             {[
-              { id: 'photos', icon: FiImage,  label: 'Photos',  count: IMAGES.length },
-              { id: 'videos', icon: FiVideo,  label: 'Videos',  count: VIDEOS.length },
+              { id: 'photos', icon: FiImage,  label: 'Photos',  count: photos.length },
+              { id: 'videos', icon: FiVideo,  label: 'Videos',  count: videos.length },
             ].map(t => (
               <button
                 key={t.id}
@@ -110,90 +193,127 @@ export default function GalleryPage() {
               </button>
             ))}
           </div>
+
+          {isAdmin && (
+            <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2 py-2.5 px-5 text-sm">
+              <FiPlus /> Add Media
+            </button>
+          )}
         </div>
 
-        {/* ── PHOTOS ── */}
-        {activeTab === 'photos' && (
+        {loading ? (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center text-jet/40">
+            Loading gallery...
+          </div>
+        ) : (
           <>
-            {/* Category pills */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-              <div className="flex gap-2 flex-wrap">
-                {CATEGORIES.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setCategory(cat)}
-                    className="px-4 py-2 rounded-full text-xs font-semibold border capitalize transition-all duration-200"
-                    style={category === cat
-                      ? { background: '#111111', color: '#F5F0E8', borderColor: '#111111' }
-                      : { borderColor: 'rgba(17,17,17,0.15)', color: 'rgba(17,17,17,0.50)', background: 'transparent' }}
-                  >
-                    {cat === 'all' ? `All (${IMAGES.length})` : cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Masonry grid */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3">
-                {filtered.map(img => (
-                  <div
-                    key={img.id}
-                    className="break-inside-avoid group relative overflow-hidden rounded-xl cursor-pointer"
-                    onClick={() => setLightboxItem(img)}
-                  >
-                    <img src={img.thumb} alt={img.label} loading="lazy" className="w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    <div className="absolute inset-0 transition-all duration-300 flex items-center justify-center" style={{ background: 'rgba(17,17,17,0)', }}>
-                      <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 text-center"
-                        style={{ background: 'rgba(17,17,17,0.6)', borderRadius: '12px', padding: '8px 16px', backdropFilter: 'blur(4px)' }}>
-                        <FiMaximize2 size={18} className="mx-auto mb-1" style={{ color: GOLD }} />
-                        <p className="text-cream text-xs font-semibold">{img.label}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* ── VIDEOS ── */}
-        {activeTab === 'videos' && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {VIDEOS.map(video => (
-                <div key={video.id} className="bg-white border border-jet/8 rounded-2xl overflow-hidden shadow-sm">
-                  <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                    <iframe
-                      className="absolute inset-0 w-full h-full"
-                      src={`https://www.youtube.com/embed/${video.embedId}?rel=0&modestbranding=1`}
-                      title={video.title}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FiPlay size={13} style={{ color: GOLD }} />
-                      <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: GOLD }}>Video</span>
-                    </div>
-                    <h3 className="font-bold text-lg text-jet mb-1">{video.title}</h3>
-                    <p className="text-jet/40 text-sm">{video.description}</p>
+            {/* ── PHOTOS ── */}
+            {activeTab === 'photos' && (
+              <>
+                {/* Category pills */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+                  <div className="flex gap-2 flex-wrap">
+                    {CATEGORIES.map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setCategory(cat)}
+                        className="px-4 py-2 rounded-full text-xs font-semibold border capitalize transition-all duration-200"
+                        style={category === cat
+                          ? { background: '#111111', color: '#F5F0E8', borderColor: '#111111' }
+                          : { borderColor: 'rgba(17,17,17,0.15)', color: 'rgba(17,17,17,0.50)', background: 'transparent' }}
+                      >
+                        {cat === 'all' ? `All (${photos.length})` : cat}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+
+                {/* Masonry grid */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3">
+                    {filteredPhotos.map(img => (
+                      <div
+                        key={img._id}
+                        className="break-inside-avoid group relative overflow-hidden rounded-xl cursor-pointer"
+                        onClick={() => setLightboxItem(img)}
+                      >
+                        <img src={img.thumb || img.url} alt={img.label} loading="lazy" className="w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        
+                        {/* Admin Delete overlay */}
+                        {isAdmin && (
+                          <button 
+                            onClick={(e) => handleDelete(img._id, e)}
+                            className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            title="Delete photo"
+                          >
+                            <FiTrash2 size={16} />
+                          </button>
+                        )}
+                        
+                        <div className="absolute inset-0 transition-all duration-300 flex items-center justify-center" style={{ background: 'rgba(17,17,17,0)', }}>
+                          <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 text-center"
+                            style={{ background: 'rgba(17,17,17,0.6)', borderRadius: '12px', padding: '8px 16px', backdropFilter: 'blur(4px)' }}>
+                            <FiMaximize2 size={18} className="mx-auto mb-1" style={{ color: GOLD }} />
+                            <p className="text-cream text-xs font-semibold">{img.label}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ── VIDEOS ── */}
+            {activeTab === 'videos' && (
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {videos.map(video => (
+                    <div key={video._id} className="group relative bg-white border border-jet/8 rounded-2xl overflow-hidden shadow-sm">
+                      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                        <iframe
+                          className="absolute inset-0 w-full h-full"
+                          src={`https://www.youtube.com/embed/${video.embedId}?rel=0&modestbranding=1`}
+                          title={video.title}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                      
+                      {isAdmin && (
+                        <button 
+                          onClick={(e) => handleDelete(video._id, e)}
+                          className="absolute top-2 right-2 p-2 bg-red-500/90 hover:bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-lg"
+                          title="Delete video"
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                      )}
+
+                      <div className="p-5">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FiPlay size={13} style={{ color: GOLD }} />
+                          <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: GOLD }}>Video</span>
+                        </div>
+                        <h3 className="font-bold text-lg text-jet mb-1">{video.title}</h3>
+                        <p className="text-jet/40 text-sm">{video.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* Stats bar */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
           <div className="grid grid-cols-3 gap-4">
             {[
-              { value: `${IMAGES.length}+`, label: 'Photos' },
-              { value: `${VIDEOS.length}`,  label: 'Videos' },
+              { value: `${photos.length}+`, label: 'Photos' },
+              { value: `${videos.length}`,  label: 'Videos' },
               { value: '4',                  label: 'Categories' },
             ].map(s => (
               <div key={s.label} className="bg-white border border-jet/8 rounded-2xl p-6 text-center shadow-sm">

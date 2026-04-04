@@ -1,7 +1,10 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FiArrowRight, FiCheck, FiStar, FiZap } from "react-icons/fi";
+import { FiArrowRight, FiCheck, FiStar, FiZap, FiTrash2 } from "react-icons/fi";
 import { MdFitnessCenter } from "react-icons/md";
 import { useAuth } from "../context/AuthContext";
+import api from "../utils/api";
+import toast from "react-hot-toast";
 
 const GOLD = "#C9A84C";
 
@@ -350,44 +353,53 @@ function TrainersSection() {
 }
 
 function TestimonialsSection() {
-  const testimonials = [
-    {
-      name: "Sarah M.",
-      role: "Pro Member · 2 years",
-      quote:
-        "FitForge completely changed my relationship with fitness. Lost 30 lbs and gained confidence I never thought possible.",
-    },
-    {
-      name: "Ahmed K.",
-      role: "Elite Member · 1 year",
-      quote:
-        "The facilities are top-tier and the booking system makes it so easy to plan my week. Best investment I have made.",
-    },
-    {
-      name: "Layla R.",
-      role: "Personal Training · 8 months",
-      quote:
-        "My trainer Jake pushed me to limits I did not know I had. I competed in my first powerlifting meet after 6 months.",
-    },
-    {
-      name: "Omar S.",
-      role: "Pro Member · 3 years",
-      quote:
-        "Been a member since day one. The community here is unlike anything else — it is a second family.",
-    },
-    {
-      name: "Nadia T.",
-      role: "Starter Member · 5 months",
-      quote:
-        "As a complete beginner the staff made me feel welcome from day one. The yoga classes with Sophia are incredible.",
-    },
-    {
-      name: "Youssef H.",
-      role: "Elite Member · 18 months",
-      quote:
-        "The 24/7 access as an elite member is a game changer. I work late shifts and can still get my workout in at 2am.",
-    },
-  ];
+  const { isAuthenticated, isAdmin } = useAuth();
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+
+  const loadReviews = async () => {
+    try {
+      const res = await api.get('/reviews');
+      setReviews(res.data.reviews);
+    } catch (err) {
+      console.error("Failed to load reviews", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadReviews();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/reviews', { rating, comment });
+      toast.success("Review submitted successfully!");
+      setShowForm(false);
+      setComment("");
+      setRating(5);
+      loadReviews();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to submit review");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this review?")) return;
+    try {
+      await api.delete(`/reviews/${id}`);
+      toast.success("Review deleted");
+      loadReviews();
+    } catch (err) {
+      toast.error("Failed to delete review");
+    }
+  };
+
   return (
     <section className="py-24" style={{ background: "#EDE8DF" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -404,31 +416,101 @@ function TestimonialsSection() {
             REAL RESULTS
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {testimonials.map((t) => (
-            <div
-              key={t.name}
-              className="bg-white border border-jet/8 rounded-2xl p-8 flex flex-col"
-            >
-              <div className="flex gap-1 mb-5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <FiStar
-                    key={i}
-                    size={14}
-                    style={{ color: GOLD, fill: GOLD }}
+        
+        {loading ? (
+          <div className="text-center text-jet/50">Loading reviews...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {reviews.map((t) => {
+              const name = t.user ? t.user.name : t.guestName;
+              const role = t.user ? (t.user.activePlan ? `${t.user.activePlan.charAt(0).toUpperCase() + t.user.activePlan.slice(1)} Member` : "Member") : t.guestRole;
+              
+              return (
+                <div
+                  key={t._id}
+                  className="group relative bg-white border border-jet/8 rounded-2xl p-8 flex flex-col"
+                >
+                  {isAdmin && (
+                    <button 
+                      onClick={() => handleDelete(t._id)}
+                      className="absolute top-4 right-4 p-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                      title="Delete review"
+                    >
+                      <FiTrash2 size={16} />
+                    </button>
+                  )}
+                  <div className="flex gap-1 mb-5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <FiStar
+                        key={i}
+                        size={14}
+                        style={{ color: i < t.rating ? GOLD : "#E5E5E5", fill: i < t.rating ? GOLD : "transparent" }}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-jet/60 text-sm leading-relaxed flex-1 mb-6">
+                    "{t.comment}"
+                  </p>
+                  <div>
+                    <p className="font-bold text-sm text-jet">{name}</p>
+                    <p className="text-jet/30 text-xs mt-0.5">{role}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Dynamic User Review Form */}
+        {isAuthenticated ? (
+          <div className="max-w-xl mx-auto bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-jet/8">
+            {!showForm ? (
+               <div className="text-center">
+                 <p className="text-jet/60 mb-4 font-medium text-sm">Have a story to share?</p>
+                 <button onClick={() => setShowForm(true)} className="btn-secondary w-full">Write a Review</button>
+               </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="flex justify-between items-center mb-2">
+                   <h3 className="font-bold text-jet">Write a Review</h3>
+                   <button type="button" onClick={() => setShowForm(false)} className="text-xs text-jet/40 hover:text-jet uppercase font-bold tracking-wider">Cancel</button>
+                </div>
+                <div>
+                  <label className="label">Rating</label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button 
+                        key={star} 
+                        type="button" 
+                        onClick={() => setRating(star)} 
+                        className="p-1 transition-transform hover:scale-110"
+                      >
+                         <FiStar size={24} style={{ color: GOLD, fill: star <= rating ? GOLD : "transparent" }} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="label">Your Comment</label>
+                  <textarea 
+                    className="input resize-none" 
+                    rows={4} 
+                    required 
+                    placeholder="Share your experience here..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
                   />
-                ))}
-              </div>
-              <p className="text-jet/60 text-sm leading-relaxed flex-1 mb-6">
-                "{t.quote}"
-              </p>
-              <div>
-                <p className="font-bold text-sm text-jet">{t.name}</p>
-                <p className="text-jet/30 text-xs mt-0.5">{t.role}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+                </div>
+                <button type="submit" className="btn-primary w-full">Submit Feedback</button>
+              </form>
+            )}
+          </div>
+        ) : (
+          <div className="text-center text-jet/50 text-sm">
+             <Link to="/login" className="underline hover:text-jet font-medium">Log in</Link> or <Link to="/register" className="underline hover:text-jet font-medium">Sign up</Link> to leave your own feedback.
+          </div>
+        )}
+
       </div>
     </section>
   );
